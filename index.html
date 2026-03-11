@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RA BTP — Outils de Pilotage</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0c14;--s1:#0f1117;--s2:#181c27;--s3:#1e2335;
+  --border:#2a2f45;--border2:#363d58;
+  --text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
+  --accent:#f97316;--accent2:#ea6c0a;
+  --green:#22c55e;--warn:#ef4444;--blue:#3b82f6;--cyan:#06b6d4;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'IBM Plex Sans',sans-serif;
+  --nav-w:220px;
+  --top-h:48px;
+}
+html,body{height:100%;overflow:hidden;font-family:var(--sans);}
+
+/* TOPBAR */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:var(--top-h);
+  background:var(--s1);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 16px 0 calc(var(--nav-w) + 16px);z-index:100;
+}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.page-title{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text);letter-spacing:.5px;}
+.page-sub{font-size:10px;color:var(--muted);font-family:var(--mono);}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.top-kpi{
+  font-family:var(--mono);font-size:10px;
+  padding:4px 10px;border-radius:2px;
+  background:var(--s2);border:1px solid var(--border);
+  color:var(--muted2);white-space:nowrap;
+}
+.top-kpi span{color:var(--accent);font-weight:700;}
+.btn-import{
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.5px;
+  padding:5px 12px;border-radius:2px;cursor:pointer;border:none;
+  background:var(--s2);border:1px solid var(--border2);color:var(--muted2);
+  transition:all .15s;
+}
+.btn-import:hover{border-color:var(--accent);color:var(--accent);}
+
+/* NAV LATÉRALE */
+.nav{
+  position:fixed;top:0;left:0;bottom:0;width:var(--nav-w);
+  background:var(--s1);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:200;
+  transition:transform .25s cubic-bezier(.22,1,.36,1);
+}
+.nav-logo{
+  height:var(--top-h);padding:0 16px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.nav-logo-icon{font-size:20px;}
+.nav-logo-text{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);letter-spacing:1px;line-height:1.2;}
+.nav-logo-sub{font-size:9px;color:var(--muted);letter-spacing:.5px;}
+
+.nav-section{padding:12px 0 4px;}
+.nav-section-title{
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  color:var(--muted);letter-spacing:1.5px;
+  padding:0 14px 4px;text-transform:uppercase;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 14px;cursor:pointer;
+  border-left:3px solid transparent;
+  transition:all .12s;color:var(--muted2);font-size:11px;
+}
+.nav-item:hover{background:var(--s2);color:var(--text);}
+.nav-item.active{
+  background:var(--s2);color:var(--accent);
+  border-left-color:var(--accent);
+}
+.nav-item .ni-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+.nav-item .ni-label{font-family:var(--sans);font-size:11px;font-weight:500;}
+.nav-item .ni-badge{
+  margin-left:auto;font-family:var(--mono);font-size:8px;font-weight:700;
+  padding:1px 5px;border-radius:8px;
+  background:rgba(249,115,22,.15);color:var(--accent);
+}
+
+.nav-divider{height:1px;background:var(--border);margin:4px 14px;}
+
+.nav-bottom{
+  margin-top:auto;padding:12px 14px;border-top:1px solid var(--border);
+  font-family:var(--mono);font-size:9px;color:var(--muted);
+}
+
+/* CONTENU — IFRAME */
+.content{
+  position:fixed;
+  top:var(--top-h);left:var(--nav-w);right:0;bottom:0;
+  background:var(--bg);
+}
+.content iframe{
+  width:100%;height:100%;border:none;
+  display:none;
+}
+.content iframe.active{display:block;}
+
+/* SPLASH */
+#splash{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--bg);color:var(--text);
+}
+#splash.hidden{display:none;}
+.splash-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
+  max-width:760px;width:100%;padding:0 20px;margin-top:24px;
+}
+.splash-card{
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:4px;padding:16px 14px;cursor:pointer;
+  transition:all .15s;text-align:center;
+}
+.splash-card:hover{border-color:var(--accent);background:var(--s2);}
+.splash-card .sc-icon{font-size:28px;margin-bottom:8px;}
+.splash-card .sc-name{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--muted2);letter-spacing:.5px;}
+.splash-card .sc-desc{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.4;}
+.splash-title{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--accent);letter-spacing:2px;}
+.splash-sub{font-size:12px;color:var(--muted);margin-top:6px;font-family:var(--mono);}
+.splash-kpis{
+  display:flex;gap:16px;margin-top:16px;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:4px;padding:12px 20px;
+}
+.sk-item{text-align:center;}
+.sk-val{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent);}
+.sk-lbl{font-size:9px;color:var(--muted);font-family:var(--mono);letter-spacing:.5px;margin-top:2px;}
+
+/* MODAL IMPORT */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(4px);
+}
+.modal-bg.open{opacity:1;pointer-events:all;}
+.modal{
+  background:var(--s1);border:1px solid var(--border2);border-radius:6px;
+  padding:24px;width:560px;max-height:80vh;overflow-y:auto;position:relative;
+}
+.modal h3{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);margin-bottom:4px;letter-spacing:.5px;}
+.modal p{font-size:11px;color:var(--muted2);margin-bottom:16px;line-height:1.6;}
+.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;}
+
+.import-zone{
+  border:2px dashed var(--border2);border-radius:4px;
+  padding:24px;text-align:center;cursor:pointer;
+  transition:all .2s;margin-bottom:12px;
+}
+.import-zone:hover,.import-zone.drag{border-color:var(--accent);background:rgba(249,115,22,.04);}
+.import-zone .iz-icon{font-size:32px;margin-bottom:8px;}
+.import-zone .iz-text{font-family:var(--mono);font-size:11px;color:var(--muted2);}
+.import-zone .iz-sub{font-size:10px;color:var(--muted);margin-top:4px;}
+
+.import-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-bottom:14px;}
+.import-tab{
+  flex:1;padding:7px 6px;font-family:var(--mono);font-size:10px;font-weight:700;
+  text-align:center;cursor:pointer;color:var(--muted);background:var(--s2);
+  border:none;border-right:1px solid var(--border);letter-spacing:.3px;transition:all .15s;
+}
+.import-tab:last-child{border-right:none;}
+.import-tab.active{background:var(--s3);color:var(--accent);}
+
+.import-panel{display:none;}
+.import-panel.active{display:block;}
+
+.format-card{
+  background:var(--s2);border:1px solid var(--border);border-radius:3px;
+  padding:10px 14px;margin-bottom:8px;font-size:11px;line-height:1.6;
+}
+.format-card strong{font-family:var(--mono);font-size:10px;color:var(--cyan);display:block;margin-bottom:4px;}
+
+.log-zone{
+  background:var(--bg);border:1px solid var(--border);border-radius:3px;
+  padding:10px;font-family:var(--mono);font-size:10px;color:var(--muted2);
+  min-height:60px;max-height:120px;overflow-y:auto;margin-top:8px;
+  display:none;
+}
+.log-zone.show{display:block;}
+.log-ok{color:var(--green);}
+.log-warn{color:var(--accent);}
+.log-err{color:var(--warn);}
+
+.btn-primary{
+  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.5px;
+  padding:8px 18px;border-radius:2px;cursor:pointer;border:none;
+  background:var(--accent);color:#fff;transition:all .15s;
+}
+.btn-primary:hover{background:var(--accent2);}
+.btn-outline{
+  font-family:var(--mono);font-size:11px;font-weight:700;
+  padding:8px 18px;border-radius:2px;cursor:pointer;
+  background:transparent;border:1px solid var(--border2);color:var(--muted2);transition:all .15s;
+}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+
+/* RESPONSIVE — toggle nav mobile */
+.nav-toggle{display:none;}
+@media(max-width:900px){
+  .nav{transform:translateX(-100%);}
+  .nav.open{transform:translateX(0);}
+  .content{left:0;}
+  .topbar{padding-left:52px;}
+  .nav-toggle{
+    display:flex;align-items:center;justify-content:center;
+    position:fixed;top:8px;left:8px;z-index:300;
+    width:32px;height:32px;background:var(--s2);border:1px solid var(--border);
+    border-radius:3px;cursor:pointer;font-size:16px;color:var(--muted2);
+  }
+}
+
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- NAV TOGGLE MOBILE -->
+<div class="nav-toggle" onclick="toggleNav()" id="nav-toggle">☰</div>
+
+<!-- NAVIGATION -->
+<nav class="nav" id="nav">
+  <div class="nav-logo">
+    <div class="nav-logo-icon">🏗</div>
+    <div>
+      <div class="nav-logo-text">RA BTP</div>
+      <div class="nav-logo-sub">OUTILS DE PILOTAGE</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">OPÉRATIONNEL</div>
+    <div class="nav-item active" onclick="load('splash','Accueil','Dashboard global')" id="ni-splash">
+      <span class="ni-icon">⬡</span><span class="ni-label">Dashboard</span>
+    </div>
+    <div class="nav-item" onclick="load('tdb','Tableau de Bord','KPIs temps réel')" id="ni-tdb">
+      <span class="ni-icon">📊</span><span class="ni-label">Tableau de Bord RA</span>
+    </div>
+    <div class="nav-item" onclick="load('crm','CRM Prospection','Clients & pipeline')" id="ni-crm">
+      <span class="ni-icon">🎯</span><span class="ni-label">CRM Prospection</span>
+      <span class="ni-badge" id="badge-crm">—</span>
+    </div>
+    <div class="nav-item" onclick="load('candidats','Base Candidats','Vivier & disponibilités')" id="ni-candidats">
+      <span class="ni-icon">👷</span><span class="ni-label">Base Candidats</span>
+      <span class="ni-badge" id="badge-cands">—</span>
+    </div>
+    <div class="nav-item" onclick="load('marge','Fiche Marge','Calculateur à la volée')" id="ni-marge">
+      <span class="ni-icon">💶</span><span class="ni-label">Fiche Marge</span>
+    </div>
+  </div>
+
+  <div class="nav-divider"></div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">PILOTAGE</div>
+    <div class="nav-item" onclick="load('pl','Simulateur P&L','Scénarios agence')" id="ni-pl">
+      <span class="ni-icon">📈</span><span class="ni-label">Simulateur P&L</span>
+    </div>
+    <div class="nav-item" onclick="load('clients','Fiche Lecture Client','Scoring solvabilité')" id="ni-clients">
+      <span class="ni-icon">🔍</span><span class="ni-label">Fiche Client</span>
+    </div>
+  </div>
+
+  <div class="nav-divider"></div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">RÉFÉRENCE</div>
+    <div class="nav-item" onclick="load('juridique','Guide Juridique','Droits & réflexes')" id="ni-juridique">
+      <span class="ni-icon">⚖️</span><span class="ni-label">Guide Juridique</span>
+    </div>
+    <div class="nav-item" onclick="load('objections','Objections Direction','Défendre sa marge')" id="ni-objections">
+      <span class="ni-icon">🗣</span><span class="ni-label">Objections Direction</span>
+    </div>
+  </div>
+
+  <div class="nav-divider"></div>
+
+  <div class="nav-section">
+    <div class="nav-section-title">DONNÉES</div>
+    <div class="nav-item" onclick="openImport()" id="ni-import">
+      <span class="ni-icon">⬆</span><span class="ni-label">Import Logiciels</span>
+    </div>
+    <div class="nav-item" onclick="exportAll()" id="ni-export">
+      <span class="ni-icon">⬇</span><span class="ni-label">Export JSON complet</span>
+    </div>
+  </div>
+
+  <div class="nav-bottom" id="nav-clock"></div>
+</nav>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div>
+      <div class="page-title" id="page-title">DASHBOARD</div>
+      <div class="page-sub" id="page-sub">Dashboard global</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="top-kpi">Prospects <span id="tk-prospects">—</span></div>
+    <div class="top-kpi">Missions actives <span id="tk-missions">—</span></div>
+    <div class="top-kpi">Candidats dispo <span id="tk-dispo">—</span></div>
+    <button class="btn-import" onclick="openImport()">⬆ IMPORT LOGICIEL</button>
+  </div>
+</div>
+
+<!-- CONTENU IFRAMES -->
+<div class="content" id="content">
+  <div id="splash">
+    <div class="splash-title">RA BTP — OUTILS DE PILOTAGE</div>
+    <div class="splash-sub">tools.z3site.com · Données locales synchronisées</div>
+    <div class="splash-kpis" id="splash-kpis">
+      <div class="sk-item" onclick="loadWithFilter('candidats','Base Candidats','Vivier &amp; disponibilités','dispo','tous')" style="cursor:pointer" title="Voir tous les candidats">
+        <div class="sk-val" id="sk-prospects">—</div><div class="sk-lbl">PROSPECTS</div>
+      </div>
+      <div class="sk-item" onclick="loadWithFilter('candidats','Base Candidats','Vivier &amp; disponibilités','dispo','mission')" style="cursor:pointer" title="Filtrer : missions actives">
+        <div class="sk-val" id="sk-missions">—</div><div class="sk-lbl">MISSIONS ACTIVES</div>
+      </div>
+      <div class="sk-item" onclick="loadWithFilter('candidats','Base Candidats','Vivier &amp; disponibilités','dispo','dispo')" style="cursor:pointer" title="Filtrer : candidats disponibles">
+        <div class="sk-val" id="sk-dispo">—</div><div class="sk-lbl">CANDIDATS DISPO</div>
+      </div>
+      <div class="sk-item" onclick="load('clients','Fiche Lecture Client','Scoring solvabilité')" style="cursor:pointer" title="Voir les clients scorés">
+        <div class="sk-val" id="sk-clients-score">—</div><div class="sk-lbl">CLIENTS SCORÉS</div>
+      </div>
+    </div>
+    <div class="splash-grid">
+      <div class="splash-card" onclick="load('tdb','Tableau de Bord','KPIs temps réel')">
+        <div class="sc-icon">📊</div>
+        <div class="sc-name">TABLEAU DE BORD</div>
+        <div class="sc-desc">KPIs temps réel, alertes, missions actives</div>
+      </div>
+      <div class="splash-card" onclick="load('crm','CRM Prospection','Clients & pipeline')">
+        <div class="sc-icon">🎯</div>
+        <div class="sc-name">CRM PROSPECTION</div>
+        <div class="sc-desc">Pipeline, fiches clients, mails types</div>
+      </div>
+      <div class="splash-card" onclick="load('candidats','Base Candidats','Vivier & disponibilités')">
+        <div class="sc-icon">👷</div>
+        <div class="sc-name">BASE CANDIDATS</div>
+        <div class="sc-desc">Vivier BTP, disponibilités, missions</div>
+      </div>
+      <div class="splash-card" onclick="load('marge','Fiche Marge','Calculateur à la volée')">
+        <div class="sc-icon">💶</div>
+        <div class="sc-name">FICHE MARGE</div>
+        <div class="sc-desc">Calculateur coûts, taux, coefficients</div>
+      </div>
+      <div class="splash-card" onclick="load('pl','Simulateur P&L','Scénarios agence')">
+        <div class="sc-icon">📈</div>
+        <div class="sc-name">SIMULATEUR P&L</div>
+        <div class="sc-desc">Scénarios, seuil rentabilité, projection</div>
+      </div>
+      <div class="splash-card" onclick="load('clients','Fiche Lecture Client','Scoring solvabilité')">
+        <div class="sc-icon">🔍</div>
+        <div class="sc-name">FICHE CLIENT</div>
+        <div class="sc-desc">Scoring solvabilité, décideurs, alertes</div>
+      </div>
+      <div class="splash-card" onclick="load('juridique','Guide Juridique','Droits & réflexes')">
+        <div class="sc-icon">⚖️</div>
+        <div class="sc-name">GUIDE JURIDIQUE</div>
+        <div class="sc-desc">Motifs, durées, AT, requalification</div>
+      </div>
+      <div class="splash-card" onclick="load('objections','Objections Direction','Défendre sa marge')">
+        <div class="sc-icon">🗣</div>
+        <div class="sc-name">OBJECTIONS</div>
+        <div class="sc-desc">Réponses direction, chiffres live</div>
+      </div>
+    </div>
+  </div>
+  <iframe id="if-tdb" src="tdb.html"></iframe>
+  <iframe id="if-crm" src="crm.html"></iframe>
+  <iframe id="if-candidats" src="candidats.html"></iframe>
+  <iframe id="if-marge" src="marge.html"></iframe>
+  <iframe id="if-pl" src="pl.html"></iframe>
+  <iframe id="if-clients" src="clients.html"></iframe>
+  <iframe id="if-juridique" src="juridique.html"></iframe>
+  <iframe id="if-objections" src="objections.html"></iframe>
+</div>
+
+<!-- MODAL IMPORT LOGICIELS -->
+<div class="modal-bg" id="modal-import">
+  <div class="modal">
+    <button class="modal-close" onclick="closeImport()">×</button>
+    <h3>⬆ IMPORT LOGICIELS INTÉRIM</h3>
+    <p>Compatible Tempo, Anaël, Evolia — formats XLS, CSV, XML. Les données importées sont fusionnées avec votre base existante.</p>
+
+    <div class="import-tabs">
+      <button class="import-tab active" onclick="switchImportTab('tempo',this)">TEMPO</button>
+      <button class="import-tab" onclick="switchImportTab('anael',this)">ANAËL</button>
+      <button class="import-tab" onclick="switchImportTab('evolia',this)">EVOLIA</button>
+      <button class="import-tab" onclick="switchImportTab('csv',this)">CSV GÉNÉRIQUE</button>
+      <button class="import-tab" onclick="switchImportTab('json',this)">JSON BACKUP</button>
+    </div>
+
+    <!-- TEMPO -->
+    <div class="import-panel active" id="ip-tempo">
+      <div class="format-card">
+        <strong>EXPORT TEMPO — Format XLS attendu</strong>
+        Menu Tempo : Rapports → Contrats → Export Excel.<br>
+        Colonnes reconnues : <code>N° Contrat · Intérimaire · Société · Date début · Date fin · Qualification · Taux brut · Taux client · Heures</code>
+      </div>
+      <div class="import-zone" id="dz-tempo" ondragover="dzOver(event,'tempo')" ondragleave="dzLeave('tempo')" ondrop="dzDrop(event,'tempo')" onclick="document.getElementById('fi-tempo').click()">
+        <div class="iz-icon">📂</div>
+        <div class="iz-text">Glisser-déposer ou cliquer pour sélectionner</div>
+        <div class="iz-sub">Fichiers XLS, XLSX, CSV acceptés</div>
+      </div>
+      <input type="file" id="fi-tempo" accept=".xls,.xlsx,.csv" style="display:none" onchange="handleImportFile(this,'tempo')"/>
+      <div class="log-zone" id="log-tempo"></div>
+    </div>
+
+    <!-- ANAËL -->
+    <div class="import-panel" id="ip-anael">
+      <div class="format-card">
+        <strong>EXPORT ANAËL — Format XLS / XML attendu</strong>
+        Menu Anaël : Gestion → Missions → Exporter → Format standard.<br>
+        Colonnes reconnues : <code>CodeMission · NomInterimaire · RaisonSociale · DateDebut · DateFin · CodeQualif · TauxHoraireB · TauxHoraireC · NbHeures</code>
+      </div>
+      <div class="import-zone" id="dz-anael" ondragover="dzOver(event,'anael')" ondragleave="dzLeave('anael')" ondrop="dzDrop(event,'anael')" onclick="document.getElementById('fi-anael').click()">
+        <div class="iz-icon">📂</div>
+        <div class="iz-text">Glisser-déposer ou cliquer pour sélectionner</div>
+        <div class="iz-sub">Fichiers XLS, XLSX, CSV, XML acceptés</div>
+      </div>
+      <input type="file" id="fi-anael" accept=".xls,.xlsx,.csv,.xml" style="display:none" onchange="handleImportFile(this,'anael')"/>
+      <div class="log-zone" id="log-anael"></div>
+    </div>
+
+    <!-- EVOLIA -->
+    <div class="import-panel" id="ip-evolia">
+      <div class="format-card">
+        <strong>EXPORT EVOLIA — Format XLS / CSV attendu</strong>
+        Menu Evolia : Contrats → Liste → Exporter en Excel.<br>
+        Colonnes reconnues : <code>id_contrat · worker_lastname · worker_firstname · client_name · start_date · end_date · job_title · hourly_rate_b · hourly_rate_c · hours_worked</code>
+      </div>
+      <div class="import-zone" id="dz-evolia" ondragover="dzOver(event,'evolia')" ondragleave="dzLeave('evolia')" ondrop="dzDrop(event,'evolia')" onclick="document.getElementById('fi-evolia').click()">
+        <div class="iz-icon">📂</div>
+        <div class="iz-text">Glisser-déposer ou cliquer pour sélectionner</div>
+        <div class="iz-sub">Fichiers XLS, XLSX, CSV acceptés</div>
+      </div>
+      <input type="file" id="fi-evolia" accept=".xls,.xlsx,.csv" style="display:none" onchange="handleImportFile(this,'evolia')"/>
+      <div class="log-zone" id="log-evolia"></div>
+    </div>
+
+    <!-- CSV GÉNÉRIQUE -->
+    <div class="import-panel" id="ip-csv">
+      <div class="format-card">
+        <strong>CSV GÉNÉRIQUE — Mappage manuel des colonnes</strong>
+        Importez n'importe quel export CSV. Après chargement, associez chaque colonne au bon champ.
+      </div>
+      <div class="import-zone" id="dz-csv" ondragover="dzOver(event,'csv')" ondragleave="dzLeave('csv')" ondrop="dzDrop(event,'csv')" onclick="document.getElementById('fi-csv').click()">
+        <div class="iz-icon">📄</div>
+        <div class="iz-text">Glisser-déposer ou cliquer</div>
+        <div class="iz-sub">Fichier CSV séparateur virgule ou point-virgule</div>
+      </div>
+      <input type="file" id="fi-csv" accept=".csv,.txt" style="display:none" onchange="handleImportFile(this,'csv')"/>
+      <div id="csv-mapper" style="display:none;margin-top:10px"></div>
+      <div class="log-zone" id="log-csv"></div>
+    </div>
+
+    <!-- JSON BACKUP -->
+    <div class="import-panel" id="ip-json">
+      <div class="format-card">
+        <strong>JSON BACKUP — Restauration complète</strong>
+        Importez un export JSON précédemment généré depuis cet outil. Toutes les données (CRM, candidats, clients, config) sont restaurées en fusion.
+      </div>
+      <div class="import-zone" id="dz-json" ondragover="dzOver(event,'json')" ondragleave="dzLeave('json')" ondrop="dzDrop(event,'json')" onclick="document.getElementById('fi-json').click()">
+        <div class="iz-icon">💾</div>
+        <div class="iz-text">Glisser-déposer ou cliquer</div>
+        <div class="iz-sub">Fichier JSON export RA BTP</div>
+      </div>
+      <input type="file" id="fi-json" accept=".json" style="display:none" onchange="handleImportFile(this,'json')"/>
+      <div class="log-zone" id="log-json"></div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+      <a id="demo-dl" href="#" download="demo_tempo_export.csv" style="display:none"></a>
+      <button class="btn-outline" onclick="downloadDemo()">⬇ Fichier démo</button>
+      <button class="btn-outline" onclick="closeImport()">FERMER</button>
+    </div>
+  </div>
+</div>
+
+<!-- SheetJS pour lire XLS/XLSX -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+// ─────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────
+var currentModule = 'splash';
+var iframesLoaded = {};
+
+function loadWithFilter(module, title, sub, filterKey, filterVal) {
+  localStorage.setItem('nav_filter', JSON.stringify({ module: filterKey, value: filterVal }));
+  load(module, title, sub);
+}
+
+function load(id, title, sub) {
+  // Cacher splash + toutes iframes
+  document.getElementById('splash').classList.toggle('hidden', id !== 'splash');
+  document.querySelectorAll('.content iframe').forEach(function(f){ f.classList.remove('active'); });
+
+  if (id !== 'splash') {
+    var iframe = document.getElementById('if-' + id);
+    if (iframe) iframe.classList.add('active');
+  }
+
+  // Nav highlight
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  var ni = document.getElementById('ni-' + id);
+  if (ni) ni.classList.add('active');
+  else document.getElementById('ni-splash').classList.add('active');
+
+  document.getElementById('page-title').textContent = title.toUpperCase();
+  document.getElementById('page-sub').textContent = sub;
+  currentModule = id;
+
+  // Fermer nav mobile
+  if (window.innerWidth <= 900) document.getElementById('nav').classList.remove('open');
+}
+
+function toggleNav() {
+  document.getElementById('nav').classList.toggle('open');
+}
+
+// ─────────────────────────────────────────
+// KPIs DEPUIS LOCALSTORAGE
+// ─────────────────────────────────────────
+function refreshKPIs() {
+  // Prospects CRM
+  try {
+    var crm = JSON.parse(localStorage.getItem('crm_btp_db') || '[]');
+    var nProspects = crm.length;
+    var nChaud = crm.filter(function(p){ return p.statut === 'CHAUD' || p.statut === 'CLIENT'; }).length;
+    setKPI('prospects', nProspects);
+    setKPI('sk-prospects', nProspects);
+    var badge = document.getElementById('badge-crm');
+    if (badge) badge.textContent = nChaud + ' chauds';
+  } catch(e) {}
+
+  // Candidats
+  try {
+    var cands = JSON.parse(localStorage.getItem('cands_btp_v2') || '[]');
+    var nMissions = cands.filter(function(c){ return c.dispo === 'mission' || (c.mission && c.mission.client); }).length;
+    var nDispo = cands.filter(function(c){ return c.dispo === 'dispo'; }).length;
+    setKPI('missions', nMissions);
+    setKPI('dispo', nDispo);
+    setKPI('sk-missions', nMissions);
+    setKPI('sk-dispo', nDispo);
+    var badge2 = document.getElementById('badge-cands');
+    if (badge2) badge2.textContent = cands.length;
+  } catch(e) {}
+
+  // Clients scorés
+  try {
+    var clients = JSON.parse(localStorage.getItem('flc_clients') || '[]');
+    setKPI('sk-clients-score', clients.length);
+  } catch(e) {}
+}
+
+function setKPI(id, val) {
+  var el1 = document.getElementById('tk-' + id);
+  var el2 = document.getElementById('sk-' + id);
+  if (el1) el1.textContent = val;
+  if (el2) el2.textContent = val;
+}
+
+// Horloge
+function clock() {
+  var d = new Date();
+  document.getElementById('nav-clock').textContent =
+    d.toLocaleDateString('fr-FR') + ' · ' + d.toLocaleTimeString('fr-FR', {hour:'2-digit',minute:'2-digit'});
+}
+setInterval(clock, 30000); clock();
+setInterval(refreshKPIs, 10000); refreshKPIs();
+
+// ─────────────────────────────────────────
+// EXPORT GLOBAL
+// ─────────────────────────────────────────
+function exportAll() {
+  var keys = ['crm_btp_db','cands_btp_v2','flc_clients','grilles_btp','agence_btp','tdb_cfg','crm_kpi_semaine','tdb_spark_marge'];
+  var data = { exported: new Date().toISOString(), version: '2.0', data: {} };
+  keys.forEach(function(k) {
+    try { data.data[k] = JSON.parse(localStorage.getItem(k) || 'null'); } catch(e) {}
+  });
+  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'backup_ra_btp_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+// ─────────────────────────────────────────
+// IMPORT MODAL
+// ─────────────────────────────────────────
+var currentImportTab = 'tempo';
+
+function openImport() { document.getElementById('modal-import').classList.add('open'); }
+function closeImport() { document.getElementById('modal-import').classList.remove('open'); }
+
+function switchImportTab(tab, el) {
+  currentImportTab = tab;
+  document.querySelectorAll('.import-tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.import-panel').forEach(function(p){ p.classList.remove('active'); });
+  el.classList.add('active');
+  document.getElementById('ip-' + tab).classList.add('active');
+}
+
+function dzOver(e, id) { e.preventDefault(); document.getElementById('dz-'+id).classList.add('drag'); }
+function dzLeave(id) { document.getElementById('dz-'+id).classList.remove('drag'); }
+function dzDrop(e, id) {
+  e.preventDefault();
+  dzLeave(id);
+  var file = e.dataTransfer.files[0];
+  if (file) processFile(file, id);
+}
+function handleImportFile(input, type) {
+  if (input.files[0]) processFile(input.files[0], type);
+  input.value = '';
+}
+
+function log(type, msg, cls) {
+  var el = document.getElementById('log-' + type);
+  if (!el) return;
+  el.classList.add('show');
+  el.innerHTML += '<div class="' + (cls||'') + '">' + msg + '</div>';
+  el.scrollTop = el.scrollHeight;
+}
+
+function processFile(file, type) {
+  var logEl = document.getElementById('log-' + type);
+  if (logEl) { logEl.innerHTML = ''; logEl.classList.add('show'); }
+  log(type, '⏳ Lecture de ' + file.name + '...', '');
+
+  var ext = file.name.split('.').pop().toLowerCase();
+
+  if (ext === 'json') {
+    var r = new FileReader();
+    r.onload = function(e) { processJSON(e.target.result, type); };
+    r.readAsText(file);
+    return;
+  }
+
+  if (ext === 'xml') {
+    var r2 = new FileReader();
+    r2.onload = function(e) { processXML(e.target.result, type); };
+    r2.readAsText(file);
+    return;
+  }
+
+  if (ext === 'csv' || ext === 'txt') {
+    var r3 = new FileReader();
+    r3.onload = function(e) { processCSV(e.target.result, type); };
+    r3.readAsText(file);
+    return;
+  }
+
+  // XLS / XLSX via SheetJS
+  if (typeof XLSX !== 'undefined') {
+    var r4 = new FileReader();
+    r4.onload = function(e) {
+      try {
+        var wb = XLSX.read(e.target.result, { type: 'array' });
+        var ws = wb.Sheets[wb.SheetNames[0]];
+        var rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+        log(type, '✓ ' + rows.length + ' lignes lues depuis ' + wb.SheetNames[0], 'log-ok');
+        processRows(rows, type);
+      } catch(err) {
+        log(type, '✗ Erreur lecture XLS : ' + err.message, 'log-err');
+      }
+    };
+    r4.readAsArrayBuffer(file);
+  } else {
+    log(type, '✗ Impossible de lire ce format (SheetJS non chargé)', 'log-err');
+  }
+}
+
+// ─── Parseurs par logiciel ───────────────
+var MAPPINGS = {
+  tempo: {
+    nom: ['Intérimaire','interimaire','NOM PRENOM','nom_prenom','Nom Prénom'],
+    client: ['Société','societe','Client','client','SOCIETE'],
+    qualif: ['Qualification','qualification','QUALIFICATION','Poste'],
+    tb: ['Taux brut','taux_brut','TAUX BRUT','TauxB','TB'],
+    tc: ['Taux client','taux_client','TAUX CLIENT','TauxC','TC'],
+    heures: ['Heures','heures','HEURES','NbH'],
+    debut: ['Date début','date_debut','DATE DEBUT','DateD'],
+    fin: ['Date fin','date_fin','DATE FIN','DateF'],
+    contrat: ['N° Contrat','contrat','CONTRAT','NumContrat'],
+  },
+  anael: {
+    nom: ['NomInterimaire','nom_interimaire','Interimaire'],
+    client: ['RaisonSociale','raison_sociale','Client'],
+    qualif: ['CodeQualif','qualif','Qualification'],
+    tb: ['TauxHoraireB','taux_b','TB'],
+    tc: ['TauxHoraireC','taux_c','TC'],
+    heures: ['NbHeures','nb_heures','Heures'],
+    debut: ['DateDebut','date_debut','Debut'],
+    fin: ['DateFin','date_fin','Fin'],
+    contrat: ['CodeMission','code_mission','Mission'],
+  },
+  evolia: {
+    nom: ['worker_lastname','worker_name','Nom'],
+    client: ['client_name','client','Société'],
+    qualif: ['job_title','qualification','Qualification'],
+    tb: ['hourly_rate_b','taux_brut','TB'],
+    tc: ['hourly_rate_c','taux_client','TC'],
+    heures: ['hours_worked','heures','Heures'],
+    debut: ['start_date','date_debut','Début'],
+    fin: ['end_date','date_fin','Fin'],
+    contrat: ['id_contrat','contrat','ID'],
+  }
+};
+
+function findCol(row, candidates) {
+  var keys = Object.keys(row);
+  for (var i = 0; i < candidates.length; i++) {
+    var c = candidates[i];
+    for (var j = 0; j < keys.length; j++) {
+      if (keys[j].trim().toLowerCase() === c.trim().toLowerCase()) return row[keys[j]];
+    }
+  }
+  // Fuzzy : contient le candidat
+  for (var i = 0; i < candidates.length; i++) {
+    for (var j = 0; j < keys.length; j++) {
+      if (keys[j].toLowerCase().includes(candidates[i].toLowerCase())) return row[keys[j]];
+    }
+  }
+  return '';
+}
+
+function processRows(rows, type) {
+  if (!rows || rows.length === 0) { log(type, '✗ Aucune donnée trouvée', 'log-err'); return; }
+
+  var mapping = MAPPINGS[type] || MAPPINGS.tempo;
+  var missions = [];
+  var candidatsNew = [];
+  var prospectsNew = [];
+
+  rows.forEach(function(row) {
+    var nom = String(findCol(row, mapping.nom) || '').trim();
+    var client = String(findCol(row, mapping.client) || '').trim();
+    var qualif = String(findCol(row, mapping.qualif) || '').trim();
+    var tb = parseFloat(String(findCol(row, mapping.tb) || '0').replace(',','.')) || 0;
+    var tc = parseFloat(String(findCol(row, mapping.tc) || '0').replace(',','.')) || 0;
+    var heures = parseFloat(String(findCol(row, mapping.heures) || '0').replace(',','.')) || 0;
+    var debut = String(findCol(row, mapping.debut) || '').trim();
+    var fin = String(findCol(row, mapping.fin) || '').trim();
+    var contrat = String(findCol(row, mapping.contrat) || '').trim();
+
+    if (!nom && !client) return;
+
+    // → Candidat
+    if (nom) {
+      var parts = nom.split(/\s+/);
+      candidatsNew.push({
+        id: 'imp_' + type + '_' + (contrat || Math.random().toString(36).slice(2,6)),
+        nom: parts[0] || nom,
+        prenom: parts.slice(1).join(' ') || '',
+        qualif: qualif,
+        tbh: tb,
+        dispo: fin && new Date(fin) > new Date() ? 'mission' : 'dispo',
+        mission: client ? { client: client, debut: debut, fin: fin, tc: tc } : null,
+        source: type,
+      });
+    }
+
+    // → Prospect CRM
+    if (client) {
+      prospectsNew.push({
+        id: 'imp_' + type + '_cli_' + client.toLowerCase().replace(/\s+/g,'_').slice(0,12),
+        nom: client,
+        statut: 'CLIENT',
+        metier: qualif,
+        source: type,
+      });
+    }
+  });
+
+  // Fusionner dans localStorage
+  var addedCands = mergeInto('cands_btp_v2', candidatsNew, 'id');
+  var addedProspects = mergeInto('crm_btp_db', prospectsNew, 'id');
+
+  log(type, '✓ ' + candidatsNew.length + ' candidats détectés → ' + addedCands + ' nouveaux ajoutés', 'log-ok');
+  log(type, '✓ ' + prospectsNew.length + ' clients détectés → ' + addedProspects + ' nouveaux ajoutés', 'log-ok');
+  log(type, '↻ Rafraîchissement des modules...', '');
+
+  refreshKPIs();
+  // Recharger les iframes actives
+  ['crm','candidats'].forEach(function(mod) {
+    var f = document.getElementById('if-' + mod);
+    if (f) { var src = f.src; f.src = ''; f.src = src; }
+  });
+}
+
+function processCSV(text, type) {
+  var sep = text.indexOf(';') > text.indexOf(',') ? ';' : ',';
+  var lines = text.trim().split('\n');
+  if (lines.length < 2) { log(type, '✗ Fichier CSV vide ou invalide', 'log-err'); return; }
+  var headers = lines[0].split(sep).map(function(h){ return h.trim().replace(/^"|"$/g,''); });
+  var rows = lines.slice(1).map(function(line) {
+    var vals = line.split(sep).map(function(v){ return v.trim().replace(/^"|"$/g,''); });
+    var obj = {};
+    headers.forEach(function(h, i){ obj[h] = vals[i] || ''; });
+    return obj;
+  });
+  log(type, '✓ CSV : ' + rows.length + ' lignes, ' + headers.length + ' colonnes', 'log-ok');
+  if (type === 'csv') {
+    // Afficher le mapper
+    showCSVMapper(headers, rows);
+  } else {
+    processRows(rows, type);
+  }
+}
+
+function showCSVMapper(headers, rows) {
+  var fields = ['nom','client','qualif','tb','tc','heures','debut','fin','contrat'];
+  var labels = {nom:'Nom intérimaire',client:'Client/Société',qualif:'Qualification',
+    tb:'Taux brut (€/h)',tc:'Taux client (€/h)',heures:'Heures travaillées',
+    debut:'Date début',fin:'Date fin',contrat:'N° Contrat'};
+  var html = '<div style="background:var(--s2);border:1px solid var(--border);border-radius:3px;padding:12px;margin-bottom:8px">'
+    +'<div style="font-family:var(--mono);font-size:9px;color:var(--cyan);margin-bottom:8px;letter-spacing:.5px">ASSOCIER LES COLONNES</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+  fields.forEach(function(f) {
+    html += '<div style="display:flex;flex-direction:column;gap:3px">'
+      +'<label style="font-family:var(--mono);font-size:9px;color:var(--muted)">' + labels[f] + '</label>'
+      +'<select id="csvmap-' + f + '" style="background:var(--s3);border:1px solid var(--border);border-radius:2px;padding:4px 6px;color:var(--text);font-family:var(--mono);font-size:10px;outline:none">'
+      +'<option value="">— Ignorer</option>'
+      + headers.map(function(h){ return '<option value="'+h+'">'+h+'</option>'; }).join('')
+      +'</select></div>';
+  });
+  html += '</div></div>'
+    +'<button class="btn-primary" onclick="applyCSVMap('+JSON.stringify(rows).replace(/</g,'&lt;')+')" style="width:100%">IMPORTER AVEC CE MAPPAGE</button>';
+  var mapper = document.getElementById('csv-mapper');
+  if (mapper) { mapper.innerHTML = html; mapper.style.display = 'block'; }
+}
+
+function applyCSVMap(rows) {
+  var fields = ['nom','client','qualif','tb','tc','heures','debut','fin','contrat'];
+  var mapping = {};
+  fields.forEach(function(f) {
+    var el = document.getElementById('csvmap-' + f);
+    if (el && el.value) mapping[f] = [el.value];
+  });
+  var tempMapping = {};
+  Object.assign(tempMapping, MAPPINGS.tempo);
+  Object.keys(mapping).forEach(function(k){ tempMapping[k] = mapping[k]; });
+  MAPPINGS._csv_custom = tempMapping;
+  processRows(rows, '_csv_custom');
+}
+
+function processXML(text, type) {
+  try {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(text, 'text/xml');
+    var rows = [];
+    // Chercher n'importe quel nœud récurrent
+    var allNodes = doc.querySelectorAll('Mission, Contrat, Contract, mission, contrat');
+    allNodes.forEach(function(node) {
+      var obj = {};
+      node.childNodes.forEach(function(child) {
+        if (child.nodeType === 1) obj[child.tagName] = child.textContent.trim();
+      });
+      rows.push(obj);
+    });
+    if (rows.length === 0) {
+      // Fallback : prendre tous les enfants du root
+      var root = doc.documentElement;
+      Array.from(root.children).forEach(function(node) {
+        var obj = {};
+        Array.from(node.children).forEach(function(child) { obj[child.tagName] = child.textContent.trim(); });
+        rows.push(obj);
+      });
+    }
+    log(type, '✓ XML : ' + rows.length + ' entrées détectées', 'log-ok');
+    processRows(rows, type);
+  } catch(e) {
+    log(type, '✗ Erreur XML : ' + e.message, 'log-err');
+  }
+}
+
+function processJSON(text, type) {
+  try {
+    var data = JSON.parse(text);
+    // Backup complet RA BTP
+    if (data.data) {
+      var count = 0;
+      Object.keys(data.data).forEach(function(k) {
+        if (data.data[k] !== null) {
+          localStorage.setItem(k, JSON.stringify(data.data[k]));
+          count++;
+        }
+      });
+      log(type, '✓ Restauration complète : ' + count + ' clés importées', 'log-ok');
+      refreshKPIs();
+      return;
+    }
+    // Array direct de candidats/prospects
+    if (Array.isArray(data)) {
+      processRows(data, 'tempo');
+      return;
+    }
+    // Export CRM
+    if (data.prospects) { mergeInto('crm_btp_db', data.prospects, 'id'); log(type, '✓ ' + data.prospects.length + ' prospects importés', 'log-ok'); }
+    if (data.candidats) { mergeInto('cands_btp_v2', data.candidats, 'id'); log(type, '✓ ' + data.candidats.length + ' candidats importés', 'log-ok'); }
+    if (data.clients) { mergeInto('flc_clients', data.clients, 'id'); log(type, '✓ ' + data.clients.length + ' clients importés', 'log-ok'); }
+    refreshKPIs();
+  } catch(e) {
+    log(type, '✗ Erreur JSON : ' + e.message, 'log-err');
+  }
+}
+
+function mergeInto(key, newItems, idField) {
+  var existing = [];
+  try { existing = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+  var added = 0;
+  newItems.forEach(function(item) {
+    var idx = existing.findIndex(function(e){ return e[idField] === item[idField]; });
+    if (idx >= 0) { Object.assign(existing[idx], item); }
+    else { existing.push(item); added++; }
+  });
+  localStorage.setItem(key, JSON.stringify(existing));
+  return added;
+}
+
+// ─── Démo fichier ───────────────────────
+function downloadDemo() {
+  var demos = {
+    tempo: 'N° Contrat;Intérimaire;Société;Date début;Date fin;Qualification;Taux brut;Taux client;Heures\nCT-2026-001;TARE Guy;SOE STUC ET STAFF;16/03/2026;20/03/2026;Staffeur N4;20;42;39\nCT-2026-002;SAIRIEN Jean;BATICORP RENOVATION;09/03/2026;27/03/2026;CVC N3P2;17;36;39\nCT-2026-003;MARTIN Paul;ARTISAN PLATERIE;02/03/2026;13/03/2026;Plâtrier N3P1;15.5;34;39\nCT-2026-004;BENSAID Karim;SOE STUC ET STAFF;23/03/2026;17/04/2026;Staffeur N3P2;18;39;39',
+    anael: 'CodeMission;NomInterimaire;RaisonSociale;DateDebut;DateFin;CodeQualif;TauxHoraireB;TauxHoraireC;NbHeures\nMISS-001;DUPONT Marc;RENO EXPRESS;16/03/2026;31/03/2026;ELEC-N3;16;35;35\nMISS-002;LEROY Sophie;BATIPRO IDF;09/03/2026;20/03/2026;PEINTRE-N2;13.5;30;35',
+    evolia: 'id_contrat;worker_lastname;worker_firstname;client_name;start_date;end_date;job_title;hourly_rate_b;hourly_rate_c;hours_worked\nEV-001;FONTAINE;Julien;MENUISERIE PARISIENNE;2026-03-16;2026-04-04;Menuisier N3;16;34;39\nEV-002;CHEN;Wei;CVC EXPERT;2026-03-09;2026-03-20;Chauffagiste N3;19;41;35',
+  };
+  var tab = currentImportTab;
+  var content = demos[tab] || demos.tempo;
+  var fname = 'demo_' + tab + '_export.csv';
+  var blob = new Blob([content], {type:'text/csv'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fname;
+  a.click();
+}
+
+// Fermer modal en cliquant dehors
+document.getElementById('modal-import').addEventListener('click', function(e) {
+  if (e.target === this) closeImport();
+});
+</script>
+</body>
+</html>
